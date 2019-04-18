@@ -55,7 +55,7 @@ required arguments:
                         Valid values for mask
   --cloudcover CLOUDCOVER
                         Cloud cover percentage (min, max)
-  --delta DELTA         Time difference from SIT product
+  --delta DELTA         Time difference from Mask product
   --credentials CREDENTIALS
                         Path to .txt file specifying username and password for
                         copernicus.com
