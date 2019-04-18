@@ -30,6 +30,7 @@ required.add_argument("--minS2pixels", default=2000, type=int,
 					  help="Minimum amount of valid pixels in S2 product,default=2000")
 required.add_argument("--minS2pixelPerc", default=20, type=int, 
 					  help="Minimum percentage of valid pixels in S2 product, default=20")
+					  
 args = parser.parse_args()
 cloudcover = args.cloudcover
 path = args.MaskPath

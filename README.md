@@ -14,7 +14,7 @@ Will create a virtual environment called venv with python version 3.6, activate 
 >conda activate venv
 ```
 
-For installing the required packaged for running the scripts, first download Rasterio with the [guide](https://rasterio.readthedocs.io/en/stable/installation.html) from Rasterio
+For installing the required packaged for running the scripts, first install the Rasterio package with the [guide](https://rasterio.readthedocs.io/en/stable/installation.html) from Rasterio
 documentation.
 
 Next, install the packages in the 'requirements.txt' file:
