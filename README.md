@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ```
 
 ## Running the scripts:
-
+### `Mask_S2_Overlap.py`
 `Mask_S2_Overlap.py` searches for overlapping Sentinel-2 products for a given mask with some defined valid pixel values.
 
 Run using the ipython interface:
@@ -78,4 +78,35 @@ overlapping Sentinel 2 product. Downloading the products is easy, after running 
 ```
 Where destination is the path to where you want your products downloaded. The S2 products are downloaded in 
 .SAFE format.
+### `S2_Reproject_Merge.py`
+When the valid Sentinel-2 products are downloaded, the second script will reproject and merge the sentinel 2 products such that each pixel correspond to the valid pixels from the previous mask raster, in this case the source raster in `SrcPath`. Example usage:
+
+```
+In [2]: run S2_Reproject_Merge.py --S2Source "PATH TO FOLDER WITH S2 PRODUCTS" --SrcPath "PATH TO SOURCEC RASTER" 
+...:--destionation "PATH TO FOLDER WHERE FINAL PRODUCT IS STORED AS merged.tif" --bands all --resampling nearest
+```
+Usage is defined here:
+```
+usage: S2_Reproject_Merge.py [-h] --SrcPath SRCPATH --S2Source S2SOURCE
+                             --destination DESTINATION
+                             [--bands BANDS [BANDS ...]]
+                             [--resampling RESAMPLING]
+
+Module created for script run in IPython
+
+required arguments:
+  --SrcPath SRCPATH     Path to src product corresponding to the S2 products
+  --S2Source S2SOURCE   Path to S2 products source folder
+  --destination DESTINATION
+                        Path to destination of reprojected and merged products
+  --bands BANDS [BANDS ...], --names-list BANDS [BANDS ...]
+                        Define bands you want to keep, default=all
+  --resampling RESAMPLING
+                        Resampling method to use from
+                        rasterio.warp.Resampling, default=nearest
+```
+
+
+
+
 
