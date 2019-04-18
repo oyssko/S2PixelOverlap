@@ -26,6 +26,10 @@ required.add_argument("--cloudcover",default=(0,30), help="Cloud cover percentag
 required.add_argument("--delta", default="hours=1", help="Time difference from SIT product")
 required.add_argument("--credentials", help="Path to .txt file specifying username and password for copernicus.com",
 					  required=True)
+required.add_argument("--minS2pixels", default=2000, type=int, 
+					  help="Minimum amount of valid pixels in S2 product,default=2000")
+required.add_argument("--minS2pixelPerc", default=20, type=int, 
+					  help="Minimum percentage of valid pixels in S2 product, default=20")
 args = parser.parse_args()
 cloudcover = args.cloudcover
 path = args.MaskPath
@@ -33,6 +37,8 @@ txtpath = args.credentials
 delta = args.delta
 validvals = args.ValidValues
 validinterval = args.ValidInterval
+minS2pixels=args.minS2pixels
+minS2pixelPerc = args.minS2pixelPerc
 
 
 if (len(validvals) == 0) and (sum(validinterval)==0):
@@ -204,6 +210,7 @@ S2products1C = Sentinel2api.query(geojson_to_wkt(geom),
 name = 'SIT_pixels'
 createSITMask(path, name=name)
 
-kept_products = searchSITPixels(name + '.tif', S2products1C)
+kept_products = searchSITPixels(name + '.tif', S2products1C, minSIT_pixels=minS2pixels, 
+								minSIT_percent=minS2pixelPerc)
 os.remove(name+'.tif')
 
