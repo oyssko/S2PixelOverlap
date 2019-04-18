@@ -67,7 +67,7 @@ required arguments:
                         default=20
 ```
 
-The script returns a list called 'kept_product' that include all the metadata information for each valid 
+The script returns a list called `kept_products` that include all the metadata information for each valid 
 overlapping Sentinel 2 product. Downloading the products is easy, after running the script, simply run this code next:
 ```Python
    ...:for prod in kept_products:
