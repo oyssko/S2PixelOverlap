@@ -21,7 +21,7 @@ required = parser.add_argument_group("required arguments")
 
 required.add_argument("--MaskPath", help="Path to mask product", required=True)
 required.add_argument("--ValidInterval", nargs="+",type=int, default=[0,0], help="Interval of values from mask")
-required.add_argument("--ValidValues",'--list', nargs='*',type=int,default=[], help='Valid values for mask')
+required.add_argument("--ValidValues",'--list', nargs='+',type=int,default=[], help='Valid values for mask')
 required.add_argument("--cloudcover",default=(0,30), help="Cloud cover percentage (min, max)")
 required.add_argument("--delta", default="hours=1", help="Time difference from SIT product")
 required.add_argument("--credentials", help="Path to .txt file specifying username and password for copernicus.com",
