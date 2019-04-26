@@ -82,8 +82,8 @@ Where destination is the path to where you want your products downloaded. The S2
 When the valid Sentinel-2 products are downloaded, the second script will reproject and merge the sentinel 2 products such that each pixel correspond to the valid pixels from the previous mask raster, in this case the source raster in `SrcPath`. Example usage:
 
 ```
-In [2]: run S2_Reproject_Merge.py --ProcessingLevel L1C --S2Source "PATH TO FOLDER WITH S2 PRODUCTS" --SrcPath "PATH TO SOURCEC RASTER" 
-...:--destionation "PATH TO FOLDER WHERE FINAL PRODUCT IS STORED AS merged.tif" --bands all --resampling nearest
+In [2]: run S2_Reproject_Merge.py --ProcessingLevel L1C --S2Source "PATH TO FOLDER WITH S2 PRODUCTS" --SrcPath "PATH TO SOURCE RASTER" 
+...:--destination "PATH TO FOLDER WHERE FINAL PRODUCT IS STORED AS merged.tif" --bands all --resampling nearest
 ```
 If you have applied atmospheric correction using ESA's [Sen2Cor](http://step.esa.int/main/third-party-plugins-2/sen2cor/) processor, you can also
 reproject and merge the Level 2A products by specifying `--ProcessingLevel` as `L2A`.
