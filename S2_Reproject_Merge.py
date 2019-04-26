@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 optional = parser._action_groups.pop()
 required = parser.add_argument_group("required arguments")
 
+required.add_argument("--ProcessingLevel", help="Specify S2 processing level, default=L1C", default="L1C")
 required.add_argument("--SrcPath", help="Path to src product corresponding to the S2 products",
 					  required=True)
 required.add_argument("--S2Source", help="Path to S2 products source folder", required=True)
@@ -28,17 +29,32 @@ SITPath = args.SrcPath
 dest = args.destination
 bandsarg = args.bands
 resampling_arg = args.resampling
+processing_level = args.ProcessingLevel
 
 
-all_bands = ['B01', 'B02','B03','B04','B05','B06','B07','B08','B8A','B09','B10','B11', 'B12']
+all_bands_1C = ['B01', 'B02','B03','B04','B05','B06','B07','B08','B8A','B09','B10','B11', 'B12']
+all_bands_2A = ['B01', 'B02','B03','B04','B05','B06','B07','B8A','B09','B11', 'B12']
 
-if bandsarg[0] == 'all':
-	bands_name = all_bands
+if processing_level == "L1C":
+	if bandsarg[0] == 'all':
+
+		bands_name = all_bands_1C
+	else:
+		checkbands = [i for i in bandsarg if i in all_bands_1C]
+		if len(checkbands)==0:
+			raise ValueError("--bands must contain at least one of these elements: B01, B02, B03, B04', B05, B06, B07, B08, B8A, B09, B10, B11, B12")
+		bands_name = bandsarg
+elif processing_level == "L2A":
+	if bandsarg[0] == 'all':
+
+		bands_name = all_bands_2A
+	else:
+		checkbands = [i for i in bandsarg if i in all_bands_2A]
+		if len(checkbands)==0:
+			raise ValueError("--bands must contain at least one of these elements: B01, B02, B03, B04, B05, B06, B07, B8A, B09, B11, B12")
+		bands_name = bandsarg
 else:
-	checkbands = [i for i in bandsarg if i in all_bands]
-	if len(checkbands)==0:
-		raise ValueError("--bands must contain at least one of these elements: B01, B02, B03, B04', B05, B06, B07, B08, B8A, B09, B10, B11, B12")
-	bands_name = bandsarg
+	raise ValueError("--ProcessingLevel must either be L1C or L2A")
 
 def resampling_method(method):
 	if method == 'nearest':
@@ -69,7 +85,7 @@ def resampling_method(method):
 		raise ValueError("Invalid method, does not exist, check rasterio.warp.Resampling for reference.")
 		return None
 
-def ReprojectS2Products(srcPath, S2Dir, destinationDir):
+def ReprojectS2Products(srcPath, S2Dir, destinationDir, procLevel):
 	"""
 		Function that reprojects and stacks each band of several S2 products to source raster. S2 products and source raster
 		must overlap.
@@ -81,7 +97,14 @@ def ReprojectS2Products(srcPath, S2Dir, destinationDir):
 
 	"""
 	# List of all S2 products paths
-	S2Products = glob(os.path.join(S2Dir, 'S2*'))
+	if procLevel == "L1C":
+		band_name_base = 3
+		S2Products = glob(os.path.join(S2Dir, '*MSIL1C*'))
+	else:
+		band_name_base = 7
+		S2Products = glob(os.path.join(S2Dir, '*MSIL2A*'))
+	
+	#print(S2Products)
 
 	with rasterio.open(srcPath) as source:
 		# Define profile for reprojection
@@ -98,15 +121,20 @@ def ReprojectS2Products(srcPath, S2Dir, destinationDir):
 				os.makedirs(destProd)
 
 			print("Reprojecting and stacking for S2 product: {}".format(prod_name))
-			imgPath = glob(os.path.join(prod, 'GRANULE', 'L*', 'IMG_DATA'))[0]
+			if procLevel == "L1C":
+				imgPath = glob(os.path.join(prod, 'GRANULE', 'L*', 'IMG_DATA'))[0]
+			else:
+				imgPath = glob(os.path.join(prod, 'GRANULE', 'L*', 'IMG_DATA','R*'))[0]
 			
-
+			
 			print("    Reprojecting Bands: ")
 			for i, band_ in enumerate(bands_name):
 			
 				bfp = glob(os.path.join(imgPath, '*'+band_+'*'))[0]
+				
 				base = os.path.basename(bfp)
-				base = base[:len(base) - 3]
+				
+				base = base[:len(base) - band_name_base]
 				print("        Band {}".format(base[-4:-1]))
 				base = base + 'tif'
 
@@ -132,7 +160,6 @@ def ReprojectS2Products(srcPath, S2Dir, destinationDir):
 
 			with rasterio.open(file_list[0]) as src0:
 				kwargs = src0.profile
-
 				kwargs.update(count=len(file_list))
 			with rasterio.open(stackDest, 'w', **kwargs) as dst:
 
@@ -177,7 +204,7 @@ def MergeRasters(srcDir, dstDir, srcImgformat='tif', returnMerge=False):
 		return None
 
 temporary_dir = os.path.join(dest, 'tmp')
-ReprojectS2Products(SITPath, S2path, destinationDir=temporary_dir)
+ReprojectS2Products(SITPath, S2path, destinationDir=temporary_dir, procLevel=processing_level)
 
 print("Merging rasters..")
 MergeRasters(srcDir=temporary_dir, dstDir=dest, srcImgformat='tif', returnMerge=False)
