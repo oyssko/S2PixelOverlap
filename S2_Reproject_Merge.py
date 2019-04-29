@@ -98,10 +98,10 @@ def ReprojectS2Products(srcPath, S2Dir, destinationDir, procLevel):
 	"""
 	# List of all S2 products paths
 	if procLevel == "L1C":
-		band_name_base = 3
+		band_name_base = 4
 		S2Products = glob(os.path.join(S2Dir, '*MSIL1C*'))
 	else:
-		band_name_base = 7
+		band_name_base = 8
 		S2Products = glob(os.path.join(S2Dir, '*MSIL2A*'))
 	
 	#print(S2Products)
@@ -111,14 +111,18 @@ def ReprojectS2Products(srcPath, S2Dir, destinationDir, procLevel):
 		kwargs = source.profile
 		for prod in S2Products:
 			file_list = []
-
+			file_listTOA = []
+			
 			prod_name = os.path.basename(prod)
 			prod_name = prod_name[:len(prod_name) - 5]
 
 			# Create temporary folder for storage
 			destProd = os.path.join(destinationDir, prod_name)
+			destProdToa = os.path.join(destProd, 'TOA')
 			if not os.path.exists(destProd):
 				os.makedirs(destProd)
+			if not os.path.exists(destProdToa):
+				os.makedirs(destProdToa)
 
 			print("Reprojecting and stacking for S2 product: {}".format(prod_name))
 			if procLevel == "L1C":
@@ -135,38 +139,56 @@ def ReprojectS2Products(srcPath, S2Dir, destinationDir, procLevel):
 				base = os.path.basename(bfp)
 				
 				base = base[:len(base) - band_name_base]
-				print("        Band {}".format(base[-4:-1]))
-				base = base + 'tif'
-
-				destBand = os.path.join(destProd, base)
+				
+				print("        Band {}".format(base[-3:]))
+				basetif = base + '.tif'
+				
+				TOAband = os.path.join(destProdToa, base+'_TOA.tif')
+				file_listTOA.append(TOAband)
+				destBand = os.path.join(destProd, basetif)
+				
 				file_list.append(destBand)
 
 				with rasterio.open(bfp) as band:
-					kwargs.update(
-						{'nodata': band.profile['nodata'],
-						 'dtype': band.profile['dtype']
-						 }
+					kwargsTOA = band.profile
+					kwargsTOA.update({
+							'dtype': 'float32',
+							'driver':'Gtiff'
+						}
 					)
+					
+					bandTOA = band.read(1).astype('float32')/10000
+					with rasterio.open(TOAband, 'w', **kwargsTOA) as dstTOA:
+						dstTOA.write(bandTOA, 1)
+						
+				
+				with rasterio.open(TOAband) as srcTOA:
+					kwargs.update({'nodata': srcTOA.profile['nodata'],
+									"driver": 'Gtiff',
+									"dtype": "float32"})
+					
 					with rasterio.open(destBand, 'w', **kwargs) as dst:
 						warp.reproject(
-							rasterio.band(band, 1),
+							rasterio.band(srcTOA, 1),
 							rasterio.band(dst, 1),
 							resampling=resampling_method(resampling_arg))
 
 			# Stack the rasters, the delete the temporary files
 			print("    Stacking bands...")
 
-			stackDest = os.path.join(destinationDir, prod_name + '_collocate.tif')
+			stackDest = os.path.join(destinationDir, prod_name + '_stacked.tif')
 
 			with rasterio.open(file_list[0]) as src0:
 				kwargs = src0.profile
 				kwargs.update(count=len(file_list))
 			with rasterio.open(stackDest, 'w', **kwargs) as dst:
-
 				for id, layer in enumerate(file_list, start=1):
 					with rasterio.open(layer) as src1:
 						dst.write_band(id, src1.read(1))
 					os.remove(layer)
+			for TOA in file_listTOA:
+				os.remove(TOA)
+			os.rmdir(destProdToa)
 			os.rmdir(destProd)
 
 			print("    Done!")
