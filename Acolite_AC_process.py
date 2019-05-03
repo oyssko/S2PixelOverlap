@@ -119,7 +119,7 @@ settings = create_acolite_settings(path, dest, 60)
 settingsfp = os.path.abspath('aculite_settings.txt')
 acolitefp=r'acolite_py_win/dist/acolite'
 os.chdir(acolitefp)
-comm = r'acolite.exe --cli --settings="C:\Users\oyste\OneDrive\Shared\UiT skole\MastersFolder\Sentinel_2_ThinSeaIceThickness\acolite_settings.txt"'
+comm = r'acolite.exe --cli --settings="../../../acolite_settings.txt"'
 subprocess.run(comm, shell=True)
 os.chdir(cwd)
 destination = os.path.join(dest, 'merged.tif')
