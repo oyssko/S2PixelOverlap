@@ -111,6 +111,21 @@ required arguments:
                         rasterio.warp.Resampling, default=nearest
 ```
 
+## ACOLITE Processor
+
+There are two scripts, `Acolite_AC_process.py` and `Reproject_acolite.py`, the first script applies the atmospheric
+correction to a set of Sentinel-2 products in .SAFE format, merging them and resamples them to either 10m, 20m or 60m
+resolution, the second script takes the result from the ACOlITE AC process and reprojects the rasters to a different
+coordinate reference system given by another raster. Similar to `S2_Reproject_Merge.py`, but without merging and works only
+for output from ACOLITE The scripts are still work in progress.
+
+You need the ACOLITE AC processor to run the script. It's available for download from the [Royal Belgian Institute of Natural Sciences](https://odnature.naturalsciences.be/remsem/software-and-data/acolite).
+Download "ACOLITE for windows", unzip the file and add the 'acolite_py_win' folder in the same directory as the ACOLITE scripts. `acolite_settings.txt` is
+a configuration file for the ACOLITE AC process and is generated from the input parameters in the `Acolite_AC_process.py` script.
+ 
+
+
+
 
 
 
